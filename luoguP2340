@@ -1,11 +1,15 @@
 /* luoguP2340 ** USACO03FALL */ 
-/* 动态规划，背包 */
+/* 方法一：动态规划，背包 */
+/* 方法二：记忆化搜索 */
+
 /**
 *n头奶牛，每头奶牛有情商s和智商f
 *选择一定数量的奶牛，使得情商之和>0，智商之和>0，且智商+情商和最大
 *1 ≤ N ≤ 400，−1000 ≤ Si; Fi ≤ 1000
 **/
-/**
+#define solution1
+#ifdef solution1
+/**方法一：动态规划
 *由于中途可能产生负数，所以不能直接动规，这里选择将数组平移
 *平移之后动规的改变见代码注释
 ******
@@ -45,3 +49,57 @@ int main()
     else printf("0");
     return 0;
 }
+
+/**方法二：记忆化搜索
+*剪枝的关键：①智商小于0，②情商小于0，③智商情商和不可能成为最优解
+*如何剪枝：搜索到某处，某处之后的最优解和此时的结果已经不符合条件/不可能成为最优解了
+*因此设置ds[i]表示从i及以后能取到的智商最大值
+**/
+#else
+#include<cstdio>
+#include<algorithm>
+using namespace std;
+const int N=405;
+int ans,n;
+int s[N],f[N],ds[N],df[N],dp[N];
+//s,f原始数据
+void dfs(int x,int ss,int ff)
+{ //x为第x头牛，ss为搜索到目前的s之和，ff同理
+    if(ss+ff+dp[x]<ans) return;
+    //如果现在的和加上从这之后能取得的最大和比已经得到的答案小，那肯定不是最优解
+    if(ss+ds[x]<0) return;
+    //如果现在的和加上从这之后能取得的s的最大和都小于0的话，这个及后面都不可能有符合题目要求的解了
+    if(ff+df[x]<0) return;
+    //同理
+    if(x==n+1)
+    {
+        ans=ss+ff;
+        //小于ans的情况已经被剪枝剪掉
+        //这也是为什么要把剪枝写前面，不写前面就得用max
+        return;
+    }
+    dfs(x+1,ss,ff);//这个奶牛不取
+    dfs(x+1,ss+s[x],ff+f[x]);//这个奶牛取
+}
+int main()
+{
+    scanf("%d",&n);
+    for(int i=1;i<=n;i++)
+        scanf("%d%d",s+i,f+i);
+    for(int i=n;i>=1;i--)
+    { //ds表示从i到最后所有牛能取到的s最大值，df、dp同理
+        ds[i]=ds[i+1];
+        if(s[i]>0) //一定是所有都为正数时取到最大值
+            ds[i]+=s[i];
+        df[i]=df[i+1];
+        if(f[i]>0)
+            df[i]+=f[i];
+        dp[i]=dp[i+1];
+        if(s[i]+f[i]>0)
+            dp[i]+=s[i]+f[i];
+    }
+    dfs(1,0,0);
+    printf("%d",ans);
+    return 0;
+}
+
