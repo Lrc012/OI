@@ -1,0 +1,106 @@
+/* luoguP1880 ** NOI1995 */
+/* 方法一：记忆化搜索 */
+/* 方法二：区间dp */
+/**
+ *一圈n堆石子，相邻两堆合并，得分为两堆石子数之和
+ *计算合并成一堆时的最大得分和最小得分
+ *1<=N<=100，每堆石子数0<=a[i]<=20
+ **/
+
+/* 方法一：记忆化搜索 */
+#include<cstdio>
+#include<algorithm>
+using namespace std;
+const int N=102,INF=0x7fffffff;
+int n;
+int a[N<<1],f1[N<<1][N<<1],f2[N<<1][N<<1],A[N<<1];
+
+int dfs1(int l,int r)
+{ //返回值：[l,r]闭区间合并的最小得分
+    if(f1[l][r]) return f1[l][r];//已经搜索过
+    if(l==r) return 0;
+    int ans=INF;//初始化为最大值
+    for(int i=l;i<r;i++) //注意i必须从l开始，否则当l=r-1时i+1会越界
+        ans=min(ans,dfs1(l,i)+dfs1(i+1,r)+A[r]-A[l-1]);
+        //[l,i]和[i+1,r]区间分别合并
+        //[l,r]合并得分=[l,i]合并得分+[i+1,r]合并得分+这两堆合并得分
+    return f1[l][r]=ans;
+}
+int dfs2(int l,int r)
+{
+    if(f2[l][r]) return f2[l][r];
+    if(l==r) return 0;
+    int ans=0;
+    for(int i=l;i<r;i++)
+        ans=max(ans,dfs2(l,i)+dfs2(i+1,r)+A[r]-A[l-1]);
+    return f2[l][r]=ans;
+}
+int main()
+{
+    scanf("%d",&n);
+    for(int i=1;i<=n;i++)
+    {
+        scanf("%d",a+i);
+        a[i+n]=a[i];
+    }
+    for(int i=1;i<=n<<1;i++)
+        A[i]=A[i-1]+a[i];
+    dfs1(1,n<<1);
+    dfs2(1,n<<1);
+    int minn=INF,maxn=0;
+    for(int i=1;i<=n;i++)
+    {
+        minn=min(minn,f1[i][i+n-1]);
+        maxn=max(maxn,f2[i][i+n-1]);
+    }
+    printf("%d\n%d",minn,maxn);
+    return 0;
+}
+
+/**方法二：区间dp
+ *递推式：f[i][j]=min(f[i][k]+f[k+1][j])+A[j]-A[i-1],i<=k<=j
+ *问题：如何遍历保证使用的是已经确定的状态
+ *回想记忆化搜索（递归），递归到最底层才能够确定状态，逐步向外扩大
+ *因此动态规划要从最小区间开始
+ *如何实现最小区间？枚举区间长度
+ **/
+#include<cstdio>
+#include<algorithm>
+using namespace std;
+const int N=102,INF=0x7fffffff;
+int n;
+int a[N<<1],f1[N<<1][N<<1],f2[N<<1][N<<1],A[N<<1];
+int main()
+{
+    scanf("%d",&n);
+    for(int i=1;i<=n;i++)
+    {
+        scanf("%d",a+i);
+        a[i+n]=a[i];
+    }
+    for(int i=1;i<=n<<1;i++)
+        A[i]=A[i-1]+a[i];
+    for(int len=1;len<n;len++)
+    //枚举区间长度[1,n)
+        for(int l=1,r=l+len;l<=n<<1&&r<=n<<1;l++,r++)
+        { //r-l=len,由于小区间需要覆盖[1,2n]，因此循环判断条件是l,r<=2n
+            int ans=INF,ans2=0;
+            for(int k=l;k<r;k++)
+            {
+                ans=min(ans,f1[l][k]+f1[k+1][r]+A[r]-A[l-1]);
+                ans2=max(ans2,f2[l][k]+f2[k+1][r]+A[r]-A[l-1]);
+            }
+            f1[l][r]=ans;
+            f2[l][r]=ans2;
+        }
+    int minn=INF,maxn=0;
+    for(int i=1;i<=n;i++)
+    {
+        minn=min(minn,f1[i][i+n-1]);
+        maxn=max(maxn,f2[i][i+n-1]);
+    }
+    printf("%d\n%d",minn,maxn);
+    return 0;
+}
+
+
