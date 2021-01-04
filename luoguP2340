@@ -7,8 +7,7 @@
 *选择一定数量的奶牛，使得情商之和>0，智商之和>0，且智商+情商和最大
 *1 ≤ N ≤ 400，−1000 ≤ Si; Fi ≤ 1000
 **/
-#define solution1
-#ifdef solution1
+
 /**方法一：动态规划
 *由于中途可能产生负数，所以不能直接动规，这里选择将数组平移
 *平移之后动规的改变见代码注释
@@ -55,7 +54,7 @@ int main()
 *如何剪枝：搜索到某处，某处之后的最优解和此时的结果已经不符合条件/不可能成为最优解了
 *因此设置ds[i]表示从i及以后能取到的智商最大值
 **/
-#else
+
 #include<cstdio>
 #include<algorithm>
 using namespace std;
@@ -102,4 +101,3 @@ int main()
     printf("%d",ans);
     return 0;
 }
-#endif
