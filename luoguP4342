@@ -1,0 +1,103 @@
+/* luoguP4342 ** NOI1998 */
+/* 区间dp */
+/**
+ *n个顶点的多边形，每个顶点有一个数字，每条边有t：加法，x：乘法
+ *选择一条边断开，剩下的相邻节点合并，合并顺序不同会导致得分不同，求最高得分
+ *输入n，n个边和顶点数字
+ *输出最高得分，和能够达到该得分的所有断开边的方法
+ *3<=n<=50，-32768<=顶点<=32767
+ *这题数据很弱
+ **/
+#include<cstdio>
+#include<algorithm>
+#include<iostream>
+using namespace std;
+const int N=55,INF=0x3f3f3f3f,IN=-INF;
+int a[N<<1],maxd[N<<1][N<<1],mind[N<<1][N<<1];
+bool f[N<<1];
+int main()
+{
+    int n;
+    cin>>n;
+    int x;
+    char c;
+    //按照之前的用每轮用maxn和minn赋值也行，不需要提前初始化
+    for(int i=1;i<=(n<<1);i++)
+        for(int j=1;j<=(n<<1);j++)
+            maxd[i][j]=IN,mind[i][j]=INF;
+    //因为有负数，有乘法，所以最大最小值并不能简单确定
+    //因此维护两个dp，一个放最小值，一个放最大值
+    for(int i=1;i<=n;i++)
+    {
+        //getchar();
+        //c=getchar();
+        //scanf("%d",a+i);
+        cin>>c>>a[i];//都怪这个垃圾的scanf
+        //混合单字符和数字输入用cin吧：）
+        a[i+n]=a[i];
+        f[i-1]=f[i-1+n]=(c=='t'?1:0);
+        //f[i]表示i到i+1的边，1是加法，0是乘法
+        //maxd[i][i]=maxd[i+n][i+n]=mind[i][i]=mind[i+n][i+n]=x;
+    }
+    for(int i=1;i<=(n<<1);i++)
+        maxd[i][i]=mind[i][i]=a[i];
+    //scanf("%d",&x);
+    //maxd[n][n]=maxd[n<<1][n<<1]=mind[n][n]=mind[n<<1][n<<1]=x;
+    //区间dp板子
+    for(int len=1;len<n;len++)
+        for(int l=1,r=len+l;l<=n<<1&&r<=n<<1;l++,r++)
+        {
+            for(int k=l;k<r;k++)
+            {
+                if(f[k])//加法
+                {
+                    //maxn=max(maxn,maxd[l][k]+maxd[k+1][r]);
+                    maxd[l][r]=max(maxd[l][r],maxd[l][k]+maxd[k+1][r]);
+                    //minn=min(minn,mind[l][k]+mind[k+1][r]);
+                    mind[l][r]=min(mind[l][r],mind[l][k]+mind[k+1][r]);
+                }
+                else //乘法
+                {
+                    //根据2个min和2个max的正负分类讨论，取到最小/最大值的情况就4种
+                    //max*max,min*min,max*min,min*max
+                    if(maxd[k+1][r]>=0&&maxd[l][k]>=0)
+                    {
+                        maxd[l][r]=max(maxd[l][r],maxd[l][k]*maxd[k+1][r]);
+                        if(mind[l][k]<0&&mind[k+1][r]<0)
+                            maxd[l][r]=max(maxd[l][r],mind[l][k]*mind[k+1][r]);
+                    }
+                    else if(maxd[l][k]<0&&mind[k+1][r]>=0)
+                        maxd[l][r]=max(maxd[l][r],maxd[l][k]*mind[k+1][r]);
+                    else if(mind[l][k]>=0&&maxd[k+1][r]<0)
+                        maxd[l][r]=max(maxd[l][r],mind[l][k]*maxd[k+1][r]);
+                    else maxd[l][r]=max(maxd[l][r],mind[l][k]*mind[k+1][r]);
+                    if(mind[l][k]>=0&&mind[k+1][r]>=0)
+                        mind[l][r]=min(mind[l][r],mind[l][k]*mind[k+1][r]);
+                    else if(maxd[l][k]<0&&maxd[k+1][r]<0)
+                        mind[l][r]=min(mind[l][r],maxd[l][k]*maxd[k+1][r]);
+                    else if((mind[l][k]>=0&&mind[k+1][r]<0)||(maxd[l][k]>=0&&mind[k+1][r]<0))
+                    {
+                        mind[l][r]=min(mind[l][r],maxd[l][k]*mind[k+1][r]);
+                        if(maxd[k+1][r]>=0&&mind[l][k]<0)
+                            mind[l][r]=min(mind[l][r],mind[l][k]*maxd[k+1][r]);
+                    }
+                    else mind[l][r]=min(mind[l][r],mind[l][k]*maxd[k+1][r]);
+                    //可是这是计算机啊还分类讨论个大头鬼-_-||
+                    /*
+                    maxd[l][r]=max(maxd[l][r],max(maxd[l][k]*maxd[k+1][r],max(maxd[l][k]*mind[k+1][r],max(mind[l][k]*mind[k+1][r],mind[l][k]*maxd[k+1][r]))));
+                    mind[l][r]=min(mind[l][r],min(maxd[l][k]*maxd[k+1][r],min(maxd[l][k]*mind[k+1][r],min(mind[l][k]*mind[k+1][r],mind[l][k]*maxd[k+1][r]))));
+                    */
+                }
+            }
+            //printf("l:%d r:%d max:%d min:%d\n",l,r,maxn,minn);
+        }
+    int ans=IN;
+    for(int i=1;i<=n;i++)
+        ans=max(ans,maxd[i][i+n-1]);
+    printf("%d\n",ans);
+    for(int i=1;i<=n;i++)
+        if(maxd[i][i+n-1]==ans) printf("%d ",i);
+    return 0;
+}
+
+
