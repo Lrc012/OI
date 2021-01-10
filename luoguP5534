@@ -1,0 +1,16 @@
+/* luoguP5534 */
+/* 等差数列 */
+/**
+ *给定第一项第二项和项数n，求和
+ *Sn=a1*n+n*(n-1)*(a2-a1)/2
+ *注意开longlong
+ **/
+#include<cstdio>
+using namespace std;
+int main()
+{
+    long long a,b,n;
+    scanf("%lld%lld%lld",&a,&b,&n);
+    printf("%lld",a*n+((n&1)?((n-1)>>1)*n:(n>>1)*(n-1))*(b-a));
+    return 0;
+}
