@@ -1,0 +1,31 @@
+/* luoguP1464 */
+/* 记忆化搜索，递归 */
+/**
+ *如果a≤0 or b≤0 or c≤0就返回值1.
+ *如果a>20a>20 or b>20b>20 or c>20c>20就返回w(20,20,20)w(20,20,20)
+ *如果a<ba<b并且b<cb<c 就返回w(a,b,c-1)+w(a,b-1,c-1)-w(a,b-1,c)w(a,b,c−1)+w(a,b−1,c−1)−w(a,b−1,c)
+ *其它的情况就返回w(a-1,b,c)+w(a-1,b-1,c)+w(a-1,b,c-1)-w(a-1,b-1,c-1)w(a−1,b,c)+w(a−1,b−1,c)+w(a−1,b,c−1)−w(a−1,b−1,c−1)
+ ****
+ *纯递归超时，因此想到记忆化
+ *开一个三维数组
+ **/
+#include<cstdio>
+#include<cstring>
+using namespace std;
+typedef long long ll;
+ll dp[23][23][23];
+ll dfs(ll x,ll y,ll z)
+{
+    if(x<=0||y<=0||z<=0) return 1;
+    if(x>20||y>20||z>20) return dfs(20,20,20);
+    if(dp[x][y][z]) return dp[x][y][z];
+    if(x<y&&y<z) return dp[x][y][z]=dfs(x,y,z-1)+dfs(x,y-1,z-1)-dfs(x,y-1,z);
+    return dp[x][y][z]=dfs(x-1,y,z)+dfs(x-1,y-1,z)+dfs(x-1,y,z-1)-dfs(x-1,y-1,z-1);
+}
+int main()
+{
+    ll a,b,c;
+    while(scanf("%lld%lld%lld",&a,&b,&c)==3&&(~a||~b||~c))
+        printf("w(%lld, %lld, %lld) = %lld\n",a,b,c,dfs(a,b,c));
+    return 0;
+}
