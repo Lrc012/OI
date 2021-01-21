@@ -1,0 +1,66 @@
+/* WF2018A */
+/** dp **/
+/**
+ *你在车站0，目标车站1，共n个车站，m辆车，在k时间前必须到达
+ *每辆车有出发站，终点站，出发时间，到达时间，出发概率
+ *求到目标车站的最大概率
+ ***********
+ *输入：
+ *m,n,k，其中2<=n,m<=1e6, 1<=k<=1e18
+ *n行，5个值，表示每辆车的情况
+ *答案精确至1e-6
+ *注意，刚好在某辆车的出发时间到达该车站不能乘坐这辆车
+ **/
+#include<cstdio>
+#include<algorithm>
+#include<map>
+using namespace std;
+typedef long long ll;
+const int N=1e6;
+int n,m;
+ll k;
+struct Edge //存边
+{
+    int u,v;
+    ll st,et;
+    double p;
+    bool operator < (const Edge& a) const
+    {
+        return this->st>a.st;
+    }
+}edge[N+5];
+map<ll,double> f[N+5];
+//f[u][s]表示车站u在s时刻出发到达目标车站的概率
+void init()
+{
+    scanf("%d%d%lld",&m,&n,&k);
+    for(int i=0;i<m;i++)
+        scanf("%d%d%lld%lld%lf",&edge[i].u,&edge[i].v,&edge[i].st,&edge[i].et,&edge[i].p);
+    return;
+}
+int main()
+{
+    init();
+    sort(edge,edge+m);
+    f[1][k+1]=1;
+    //倒着推，所以到站概率置为1
+    for(int i=0;i<m;i++)
+    {
+        const Edge& e=edge[i];//简化代码
+        //dp关系：f[e.u][e.st]=MAX(不坐这辆车等下一辆，坐这辆车到下一站，选择了做这辆车但是车不开了）
+        double p1=f[e.u].upper_bound(e.st)->second;
+        //不坐这辆车
+        //p1为在这辆车之后最早从e.u这站出发的车到达目标站的概率
+        //同时也为不坐这辆车等下一辆车的到达概率
+        double p2=f[e.v].upper_bound(e.et)->second;
+        //p2为坐这辆车到了下一站后，最先开出的车的到达目标站的概率
+        double p=e.p*p2+(1-e.p)*p1;
+        //选择了坐这辆车
+        //情况1，到了下一站，用下一站的概率更新这一站
+        //情况2，车不开了，只好继续等
+        f[e.u][e.st]=max(f[e.u][e.st],max(p,p1));
+    }
+    printf("%g",f[0].begin()->second);
+    return 0;
+}
+
