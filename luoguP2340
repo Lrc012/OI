@@ -1,4 +1,4 @@
-/* luoguP2340 ** USACO03FALL */ 
+/* luoguP2340 ** USACO03FALL */
 /* 方法一：动态规划，背包 */
 /* 方法二：记忆化搜索 */
 
