@@ -1,0 +1,96 @@
+/* UVA1401 */
+/** Trie+dp **/
+/**
+ *一个字符串，长度在[1,300000]之间
+ *m个单词，长度在[1,100]之间，1<=m<=4000
+ *将该字符串分割使其由给出的单词组合而成
+ *求分割的方式总数，答案mod20071027
+ **/
+#include<cstdio>
+#include<unordered_map>
+#include<map>
+#include<cstring>
+using namespace std;
+//#define map unordered_map
+const int mod=20071027,N=3e5;
+const int maxnode=1e6;
+char str[N+5];
+int dp[N];
+struct Trie
+{
+    map<char,int> ch[maxnode];
+    //ch[i][s]表示编号为i的节点的子节点s的编号（s为a字符）
+    //为0即没有子节点
+    //如果用二维整型数组实现，需要给字母编号
+    int val[maxnode];
+    int tot;//节点总数
+    Trie()
+    {
+        tot=1;
+        ch[0].clear();
+        memset(val,0,sizeof(val));
+    }
+
+    //插入一个字符串s，v为该字符串的信息
+    void Insert(char *s,int v)
+    {
+        int u=0,n=strlen(s);//u为根节点
+        for(int i=0;i<n;i++)//遍历该字符串
+        {
+            char c=s[i];
+            if(ch[u][c]==0)//u没有字符为s[i]的子节点
+            {
+                ch[tot].clear();
+                val[tot]=0;//中间节点清空信息
+                ch[u][c]=tot++;
+            }
+            u=ch[u][c];//树继续往深了走，走到目前节点
+        }
+        val[u]=v;//该字符串的最后一个字母所在的节点标记该字符串的编号信息
+
+    }
+
+    void Find(char *s,int st,int en)
+    {
+        //printf("%s:\n",s);
+        int u=0,n=strlen(s);
+        for(int i=0;i<n;i++)
+        {
+            if(ch[u][s[i]]==0) return;
+            u=ch[u][s[i]];
+            if(val[u])
+            {
+                //printf("%c\n",s[i]);
+                dp[st]=(dp[st]+dp[st+i+1])%mod;
+            }
+            //如果走到节点u组成了一个单词
+            //那么从st切割的字符串的结果可以加上从u切割字符串的结果数
+            //每找到一个就更新
+        }
+    }
+};
+int main()
+{
+    int y=1;
+    while(~scanf("%s",str))
+    {
+        Trie* trie=new Trie();
+        int t;
+        scanf("%d",&t);
+        for(int i=1;i<=t;i++)
+        {
+            char ss[105];
+            scanf("%s",ss);
+            trie->Insert(ss,i);
+        }
+        int len=strlen(str);
+        memset(dp,0,sizeof(dp));
+        dp[len]=1;
+        for(int i=len-1;i>=0;i--)
+            trie->Find(str+i,i,len);
+        //找str[i...len]的分割情况
+        printf("Case %d: %d\n",y++,dp[0]);
+    }
+    return 0;
+}
+
