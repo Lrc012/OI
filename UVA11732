@@ -1,0 +1,89 @@
+/* UVA11732 */
+/** trie **/
+/**
+ *strcmp函数的比较规则，比较到不相同/结束的时候结束比较
+ *给定n个字符串，两两比较，0<n<4001
+ *字符串包括大小写、数字，长度[1,1000]
+ *多组数据，以n=0结束
+ *输出总共的比较次数
+ **/
+#include<cstdio>
+#include<map>
+#include<cstring>
+using namespace std;
+typedef long long ll;
+const int maxnode=(4e6)+5;
+char str[1005];
+struct Trie
+{
+    map<char,int> ch[maxnode];
+    int cnt[maxnode],val[maxnode];
+    //cnt记录该节点有多少字符串经过
+    //val记录该节点有多少字符串结尾
+    int tot;
+    ll ans;
+    Trie()
+    {
+        tot=1;
+        ans=0;
+        ch[0].clear();
+        memset(cnt,0,sizeof(cnt));
+        memset(val,0,sizeof(val));
+    }
+    void Insert(char *s)
+    {
+        int u=0,n=strlen(s);
+        for(int i=0;i<n;i++)
+        {
+            char c=s[i];
+            if(ch[u][c]==0)
+            {
+                ch[tot].clear();
+                ch[u][c]=tot++;
+            }
+            cnt[u]++;
+            u=ch[u][c];
+        }
+        cnt[u]++;
+        val[u]++;
+    }
+    void solve(int x,int depth)
+    {
+        ll temp=0;
+        for(auto it=ch[x].begin();it!=ch[x].end();it++)
+        {
+            int nxt=it->second;
+            temp+=cnt[nxt]*(cnt[x]-cnt[nxt]-val[x]);
+            //计算x节点的下一节点的第一次比较
+            //分支说明只比较了一次，个数是nxt分支*非nxt分支
+            //其中在x节点终结的不需要比较
+            //类似n个人握手，n*(n-1)，还需要/2
+            temp+=val[x]*cnt[nxt]*2;
+            //在x节点终结的和其他的比较
+            //因为上一步的计算在后面需要/2，因此这一步先*2，保持之后/2不变
+            solve(nxt,depth+1);
+        }
+        temp>>=1;
+        ans+=temp*(depth*2+1);
+        //还是不太明白这个depth*2+1
+        ans+=val[x]*(val[x]-1)*(depth+1);
+        //在x终结的之间的比较，即相同字符串之间的比较
+        //推导：C(n,2)*2（每一步都是两次比较）*(depth+1)
+    }
+};
+int main()
+{
+    int n,t=0;
+    while(~scanf("%d",&n)&&n)
+    {
+        Trie* trie=new Trie();
+        for(int i=0;i<n;i++)
+        {
+            scanf("%s",str);
+            trie->Insert(str);
+        }
+        trie->solve(0,0);
+        printf("Case %d: %lld\n",++t,trie->ans);
+    }
+    return 0;
+}
