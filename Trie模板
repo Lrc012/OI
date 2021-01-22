@@ -1,0 +1,43 @@
+/* Trie模板 */
+const int maxnode=1e5,sigma_size=26;
+struct Trie
+{
+    map<char,int> ch[maxnode];
+    //ch[i][s]表示编号为i的节点的子节点s的编号（s为字符）
+    //为0即没有子节点
+    //如果用二维整型数组实现，需要给字母编号
+    int val[maxnode];
+    int tot;//节点总数
+    Trie()
+    {
+        tot=1;
+        ch[0].clear();
+        memset(val,0,sizeof(val));
+    }
+
+    //插入一个字符串s，v为该字符串的信息
+    void Insert(char *s,int v)
+    {
+        int u=0,n=strlen(s);//u为根节点
+        for(int i=0;i<n;i++)//遍历该字符串
+        {
+            char c=s[i];
+            if(ch[u][c]==0)//u没有字符为s[i]的子节点
+            {
+                ch[tot].clear();
+                val[tot]=0;//中间节点清空信息
+                ch[u][c]=tot++;
+            }
+            u=ch[u][c];//树继续往深了走，走到目前节点
+        }
+        val[u]=v;//该字符串的最后一个字母所在的节点标记该字符串的编号信息
+    }
+
+    bool Find(char *s)
+    {
+        int u=0,n=strlen(s);
+        for(int i=0;i<n;i++)
+            if(ch[u][s[i]]==0) return false;
+            else u=ch[u][s[i]];
+    }
+};
