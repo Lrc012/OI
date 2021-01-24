@@ -1,0 +1,37 @@
+/* luoguP4391 */
+/**
+ *输入字符串T，长度1e6之内
+ *已知T是由一个子串不断复制连接形成的然后从中截取而来
+ *求这个重复子串的最小长度
+ **/
+#include<cstdio>
+#include<cstring>
+#include<algorithm>
+using namespace std;
+const int N=1e6;
+int f[N+10];
+char T[N+10];
+int get_f(char *T,int *f)
+{
+    int len=strlen(T),j=-1,ans=1;//如果只有一个字符就是1
+    f[0]=f[1]=-1;
+    for(int i=1;i<len;i++)
+    {
+        while(~j&&T[j+1]!=T[i])
+            j=f[j];
+        if(T[j+1]==T[i])
+            j++;
+        f[i]=j;
+        //因为kmp匹配到的最近的重复单元，所以i-j是最小值的产生
+        ans=max(ans,i-j);
+    }
+    return ans;
+}
+int main()
+{
+    int n;
+    scanf("%d",&n);
+    scanf("%s",T);
+    printf("%d",get_f(T,f));
+    return 0;
+}
