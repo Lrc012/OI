@@ -1,0 +1,53 @@
+/* luoguP3375 */
+/** 模板：KMP **/
+/**
+ *输入字符串P和模板串T
+ *输出模板串在字符串P中出现的位置
+ *输出对于模板串中的每一位为结尾的子串，前缀与后缀完全相同的长度
+ *字符串长度<=1e6
+ **/
+#include<cstdio>
+#include<cstring>
+using namespace std;
+const int N=(1e6)+10;
+char P[N],T[N];
+int f[N];
+void match(char *T,char *P,int *f)
+{
+    int l1=strlen(T),j=-1,l2=strlen(P);
+    for(int i=0;i<l2;i++)
+    {
+        while(~j&&T[j+1]!=P[i])
+            j=f[j];
+        if(T[j+1]==P[i])
+            j++;
+        if(j==l1-1)
+        {
+            printf("%d\n",i-j+1);
+            j=f[j];
+        }
+    }
+}
+void get_f(char *T,int *f)
+{
+    int len=strlen(T),j=-1;
+    f[0]=-1;
+    for(int i=1;i<len;i++)
+    {
+        while(~j&&T[j+1]!=T[i])
+            j=f[j];
+        if(T[j+1]==T[i])
+            j++;
+        f[i]=j;
+    }
+}
+int main()
+{
+    scanf("%s",P);
+    scanf("%s",T);
+    get_f(T,f);
+    match(T,P,f);
+    for(int i=0;i<strlen(T);i++)
+        printf("%d ",f[i]+1);
+    return 0;
+}
