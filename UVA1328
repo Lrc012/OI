@@ -1,0 +1,44 @@
+/* Gym101461A UVA1328 */
+/** MP&KMP **/
+/**
+ *多组数据
+ *输入n，和长度为n的字符串S，n=0为结束，2<=n<=1e6
+ *对于S的前i个字符组成的子串，如果该子串是某字符串周期重复得到的
+ *输出i和重复子串的次数
+ *输出格式：Test case #1换行，每个case之间空一行
+ *********************************
+ *这题有些离谱，这份代码用的是MP，改成KMP也能过Uva
+ *然而Gym的两份都过不掉，而且test1就错，不知道怎么回事
+ **/
+#include<cstdio>
+#include<cstring>
+using namespace std;
+const int N=1000000;
+int f[N+10];
+char S[N+10];
+int n;
+int main()
+{
+    int t=0;
+    while(~scanf("%d",&n)&&n)
+    {
+        scanf("%s",S);
+        int j=0;
+        memset(f,0,sizeof(f));
+        for(int i=1;i<n;i++)
+        {
+            j=f[i];
+            while(j&&S[j]!=S[i])
+                j=f[j];
+            f[i+1]=(S[i]==S[j]?j+1:0);
+        }
+        printf("Test case #%d\n",++t);
+        for(int i=2;i<=n;i++)
+            //f得到的是子串前后缀相同的最近位置
+            //如果是周期重复必然满足i=k*(i-f[i])，即是周期长度的整数倍
+            if(f[i]>0&&(i%(i-f[i])==0))
+                printf("%d %d\n",i,i/(i-f[i]));
+        puts("");
+    }
+    return 0;
+}
