@@ -1,0 +1,61 @@
+/* 蓝桥杯2018初赛 */
+/** dfs **/
+/**
+ *给n*n的地图，.为海，#为陆地，上下左右连接的陆地为同一个岛屿
+ *全球变暖，如果岛屿的某一块陆地上下左右有一个方向有海水则会被淹没
+ *输出有多少岛屿被完全淹没
+ ************
+ *错误想法：深搜找原来岛屿个数+删除被淹没的陆地+再次深搜看还剩多少岛屿，相减
+ *然而题目意思是一个岛屿就算被淹没后变成了两个岛屿也算1个岛屿没有淹没，就很绝
+ *既然如此，只需要在深搜的时候找出一个岛屿有没有不会被淹的陆地
+ **/
+#include<cstdio>
+#include<cstring>
+using namespace std;
+const int N=1005;
+bool vst[N][N];
+int dx[4]={0,0,1,-1},dy[4]={1,-1,0,0};
+int n,tot,ans;
+char mp[N][N];
+bool flag;
+void src(int x,int y)//深搜
+{
+    vst[x][y]=true;
+    int t=0;//计数(x,y)点周围有几块陆地
+    for(int i=0;i<4;i++)
+    {
+        int nx=x+dx[i],ny=y+dy[i];
+        if(nx>=0&&nx<n&&ny>=0&&ny<n&&mp[nx][ny]=='#')//找到陆地
+        {
+            t++;
+            if(!vst[nx][ny])//没搜过
+                src(nx,ny);
+        }
+    }
+    if(t==4) flag=true;//有四块陆地，不会淹没
+    return;
+}
+void print()//debug用
+{
+    for(int i=0;i<n;i++,putchar('\n'))
+        for(int j=0;j<n;j++)
+            printf("%d",vst[i][j]);
+    putchar('\n');
+}
+int main()
+{
+    scanf("%d",&n);
+    for(int i=0;i<n;i++)
+        scanf("%s",mp[i]);
+    for(int i=0;i<n;i++)
+        for(int j=0;j<n;j++)
+            if(mp[i][j]=='#'&&!vst[i][j])
+            {
+                flag=false;
+                tot++;//找到一个岛屿
+                src(i,j);
+                if(flag) ans++;//该岛屿不会沉没
+            }
+    printf("%d",tot-ans);
+}
+
