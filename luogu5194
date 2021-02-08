@@ -1,0 +1,50 @@
+/* luogu5194 ** USACO05DEC */
+/* dfs,剪枝 */
+/**
+ *给n个数的不下降序列
+ *求这里的数能组成不超过c的最大整数
+ *1<=n<=1000，1<=c<=2e30
+ *题解提醒，题目有给出从第三项起不小于之前所有数中最大俩数之和
+ *而斐波那契数列增长很快，30个之后就超过2e30了
+ **/
+#include<cstdio>
+#include<algorithm>
+using namespace std;
+const int N=1005;
+int a[N];
+long long s[N];
+int n;
+long long ans,c;
+void dfs(int x,long long y)
+{
+    if(x==0) return;
+    if(y+s[x-1]<ans) return;
+    //第一遍没有这个tle了
+    //s[i]为第1到第i个的和
+    //如果前面所有的加上目前所得的都比已知答案小
+    //那么这个解一定不对
+    for(int i=x-1;i>0;i--)
+    {
+        if(y+a[i]<=c)
+        {
+            ans=max(ans,y+a[i]);
+            dfs(i,y+a[i]);
+        }
+    }
+}
+int main()
+{
+    scanf("%d%lld",&n,&c);
+    int i;
+    for(i=1;i<=n;i++)
+    {
+        scanf("%d",a+i);
+        s[i]=s[i-1]+a[i];
+    }
+    for(i=n;i>0;i--)
+        if(a[i]<=c) break;
+    for(i;i>0;i--)
+        dfs(i,a[i]);
+    printf("%lld",ans);
+    return 0;
+}
