@@ -4,6 +4,8 @@
  *n*m的二维数组(n,m<=100)
  *每步可走上下左右，该位置数值必须严格下降
  *求能走的最长路
+ ***************
+ *题解的一种做法，这题用类似Dijkstra，优先队列，每次都取最小的更新也可以
  **/
 #include<cstdio>
 #include<cstring>
@@ -22,6 +24,7 @@ int dfs(int x,int y)
     {
         int nx=x+dx[i],ny=y+dy[i];
         if(nx<0||nx>=n||ny<0||ny>=m||mp[nx][ny]>=mp[x][y]) continue;
+        //因为只能往低的走，因此不会走到走过的，不需要vst数组记录访问
         cur=max(cur,dfs(nx,ny)+1);
     }
     return f[x][y]=cur;
