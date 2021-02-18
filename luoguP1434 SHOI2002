@@ -1,0 +1,43 @@
+/* luoguP1434 SHOI2002 */
+/** 记忆化搜索 **/
+/**
+ *n*m的二维数组(n,m<=100)
+ *每步可走上下左右，该位置数值必须严格下降
+ *求能走的最长路
+ **/
+#include<cstdio>
+#include<cstring>
+#include<algorithm>
+using namespace std;
+const int N=105;
+const int dx[4]={0,0,1,-1},dy[4]={1,-1,0,0};
+int n,m,ans;
+int mp[N][N],f[N][N];
+//f[i][j]为从mp[i][j]出发的最长路
+int dfs(int x,int y)
+{
+    if(f[x][y]) return f[x][y];
+    int cur=1;
+    for(int i=0;i<4;i++)
+    {
+        int nx=x+dx[i],ny=y+dy[i];
+        if(nx<0||nx>=n||ny<0||ny>=m||mp[nx][ny]>=mp[x][y]) continue;
+        cur=max(cur,dfs(nx,ny)+1);
+    }
+    return f[x][y]=cur;
+}
+int main()
+{
+    scanf("%d%d",&n,&m);
+    for(int i=0;i<n;i++)
+        for(int j=0;j<m;j++)
+            scanf("%d",&mp[i][j]);
+    for(int i=0;i<n;i++)
+        for(int j=0;j<m;j++)
+            dfs(i,j);
+    for(int i=0;i<n;i++)
+        for(int j=0;j<m;j++)
+            ans=max(ans,f[i][j]);
+    printf("%d",ans);
+    return 0;
+}
