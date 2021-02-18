@@ -81,3 +81,80 @@ int main()
     else printf("%d",ans);
     return 0;
 }
+/* bfs做法
+#include<cstdio>
+#include<cstring>
+#include<algorithm>
+#include<queue>
+using namespace std;
+const int N=105,INF=N*N*2;
+const int dx[4]={0,0,1,-1},dy[4]={1,-1,0,0};
+int mp[N][N];
+bool vst[N][N];
+int m,n;
+int ans;
+struct node//bfs时每一步所需要的信息写一个结构体
+{
+    int x,y,cnt,color;
+    bool operator < (const node& a) const
+    {//便于优先队列的使用
+        return cnt>a.cnt;
+    }
+    node(int a,int b,int c,int d):x(a),y(b),cnt(c),color(d){}
+};
+void print()
+{
+    for(int i=1;i<=m;i++,putchar('\n'))
+        for(int j=1;j<=m;j++)
+            printf("%d ",mp[i][j]);
+}
+int main()
+{
+    memset(mp,-1,sizeof(mp));
+    ans=INF;
+    scanf("%d%d",&m,&n);
+    for(int i=0;i<n;i++)
+    {
+        int x,y;
+        scanf("%d%d",&x,&y);
+        scanf("%d",&mp[x][y]);
+    }
+    //print();
+    priority_queue<node> q;
+    q.push(node(1,1,0,mp[1][1]));
+    while(!q.empty())
+    {
+        node cur=q.top();//取出来的时为止花费最少的
+        q.pop();
+        int x,y,nx,ny;
+        x=cur.x,y=cur.y;
+        if(vst[x][y]) continue;
+        vst[x][y]=true;
+        if(x==m&&y==m)
+        {
+            ans=cur.cnt;
+            break;
+        }
+        bool magic=false;
+        if(mp[x][y]!=cur.color)//如果当前脚下颜色跟初始不一样说明上一步变了色
+            magic=true;
+        for(int i=0;i<4;i++)
+        {
+            nx=x+dx[i],ny=y+dy[i];//四个方向
+            if(nx<=0||nx>m||ny<=0||ny>m)
+                continue;
+            if(mp[nx][ny]==-1)
+            {
+                if(magic) continue;//不可继续变色
+                q.push(node(nx,ny,cur.cnt+2,cur.color));
+            }
+            else if(mp[nx][ny]==cur.color)
+                q.push(node(nx,ny,cur.cnt,cur.color));
+            else q.push(node(nx,ny,cur.cnt+1,mp[nx][ny]));
+        }
+    }
+    if(ans==INF) printf("-1");
+    else printf("%d",ans);
+    return 0;
+}
+*/
