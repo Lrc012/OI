@@ -1,0 +1,98 @@
+/* luoguP1378 */
+/** dfs **/
+/**
+ *给定一个长方形的两对角坐标，范围在-1000~1000
+ *给定油滴个数n，n在(1,1000]，之后输入每个油滴的x，y坐标
+ *规定油滴按圆形向外扩展，碰到油滴/长方形边则停止
+ *求所有油滴扩展的最大面积
+ **/
+#include<cstdio>
+#include<map>
+#include<vector>
+#include<cstring>
+#include<cmath>
+using namespace std;
+#define PI 3.1415926
+const int N=2e3+10;
+int n,x1,x2,yy,y2;
+double ans;
+int X[N],Y[N];
+double r[N];
+bool vst[N];
+double dis(int a,int b)//计算a点和b点的距离
+{
+    return sqrt((X[a]-X[b])*(X[a]-X[b])+(Y[a]-Y[b])*(Y[a]-Y[b]));
+}
+double cul(int x)//更新油滴半径
+{
+    double cur=min(X[x]-x1,min(x2-X[x],min(Y[x]-yy,y2-Y[x])));
+    for(int i=0;i<n;i++)
+        if(i!=x&&vst[i])
+            cur=min(cur,fabs(dis(i,x)-r[i]));
+    return cur;
+}
+void S()//更新ans
+{
+    double cur=0.0;
+    for(int i=0;i<n;i++)
+    {
+       // printf("%lf ",r[i]);
+        cur+=r[i]*r[i]*PI;//计算总面积
+    }
+    //printf("%lf\n",cur);
+    ans=max(cur,ans);
+}
+bool check(int x)//检查是否已被覆盖
+{
+    for(int i=0;i<n;i++)
+    {
+        if(x==i||!vst[i]) continue;
+        if(dis(i,x)<=r[i]) return false;
+    }
+    return true;
+}
+void dfs(int x,int cnt)//当前扩展到x，已经扩展了cnt个
+{
+    if(cnt==n)
+    {
+        S();//更新ans
+        return;
+    }
+    //for(int i=0;i<n;i++)
+        //printf("%lf ",r[i]);
+    //putchar('\n');
+    for(int i=0;i<n;i++)
+        if(!vst[i])//没扩展过
+        {
+            vst[i]=true;
+            if(check(i))//如果可以扩展
+                r[i]=cul(i);
+            else r[i]=0;//已经被覆盖
+            dfs(i,cnt+1);
+            vst[i]=false;
+        }
+}
+int main()
+{
+    scanf("%d%d%d%d%d",&n,&x1,&yy,&x2,&y2);
+    x1+=1000,yy+=1000,x2+=1000,y2+=1000;
+    //考虑到负数，都加1000变正
+    if(x1>x2) swap(x1,x2);
+    if(yy>y2) swap(yy,y2);
+    for(int i=0;i<n;i++)
+    {
+        scanf("%d%d",X+i,Y+i);
+        X[i]+=1000;
+        Y[i]+=1000;
+    }
+    for(int i=0;i<n;i++)
+    {
+        vst[i]=true;
+        r[i]=cul(i);
+        dfs(i,1);
+        vst[i]=false;
+    }
+    printf("%d",(x2-x1)*(y2-yy)-(int)(ans+0.5));
+    return 0;
+}
+
