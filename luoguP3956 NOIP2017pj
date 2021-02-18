@@ -1,0 +1,83 @@
+/* luoguP3956 NOIP2017pj */
+/** bfs/dfs，剪枝 **/
+/**
+ *m*m的棋盘有n个有色格子，输入m，n，及每个格子的颜色（1为黄，0为红）
+ *从左上角走到左下角，必须只能站在有颜色的格子
+ *规则：上下左右四个方向，颜色相同则不耗费金币，颜色不同则耗费1金币
+ *可以将无色变成指定颜色，花费2金币，走上去之后不能再次使用魔法变色，离开时格子变回无色
+ *求最小花费金币，不能到达输出-1
+ *1<=m<=100,1<=n<=1000
+ ***********
+ *注意等号情况剪枝也得剪掉
+ **/
+#include<cstdio>
+#include<cstring>
+#include<algorithm>
+using namespace std;
+const int N=105,INF=N*N*2;
+const int dx[4]={0,0,1,-1},dy[4]={1,-1,0,0};
+int mp[N][N],f[N][N];
+bool vst[N][N];
+int m,n;
+int ans;
+void print()
+{
+    for(int i=1;i<=m;i++,putchar('\n'))
+        for(int j=1;j<=m;j++)
+            printf("%d ",mp[i][j]);
+}
+void dfs(int x,int y,int cur,bool magic)
+{
+    if(cur>=f[x][y])//一开始没加等号就TLE了
+        return;
+    f[x][y]=cur;
+    if(x==m&&y==m)
+    {
+        ans=cur;//前面已经保证cur一定比f[x][y]小，那么一定能保证比之前的ans小
+        return;
+    }
+    for(int i=0;i<4;i++)
+    {
+        int nx=x+dx[i],ny=y+dy[i];//四个方向
+        if(nx<=0||nx>m||ny<=0||ny>m||vst[nx][ny])
+            continue;
+        if(mp[nx][ny]==-1)//无颜色
+        {
+            if(magic) continue;//这步已经变过色，不行
+            vst[nx][ny]=true;
+            mp[nx][ny]=mp[x][y];
+            //这里应该是题目表述不严谨
+            //变色只能变成和现在脚下相同的颜色，不能随意指定
+            dfs(nx,ny,cur+2,true);
+            vst[nx][ny]=false;
+            mp[nx][ny]=-1;
+        }
+        else
+        {
+            vst[nx][ny]=true;
+            if(mp[nx][ny]==mp[x][y])
+                dfs(nx,ny,cur,false);
+            else dfs(nx,ny,cur+1,false);
+            vst[nx][ny]=false;
+        }
+    }
+}
+int main()
+{
+    memset(mp,-1,sizeof(mp));
+    memset(f,INF,sizeof(f));
+    ans=INF;
+    scanf("%d%d",&m,&n);
+    for(int i=0;i<n;i++)
+    {
+        int x,y;
+        scanf("%d%d",&x,&y);
+        scanf("%d",&mp[x][y]);
+    }
+    vst[1][1]=true;
+    if(mp[1][1]!=-1)
+        dfs(1,1,0,false);
+    if(ans==INF) printf("-1");
+    else printf("%d",ans);
+    return 0;
+}
