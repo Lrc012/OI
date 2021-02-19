@@ -1,0 +1,53 @@
+/* luoguP1535 USACO08MAR */
+/** 记忆化搜索 **/
+/**
+ *n*m地图，*为不能走，.为能走，t为限定时间，走一格花费1s，可重复走
+ *初始坐标(X1,Y1)，输出恰好t秒走到(X2,Y2)的路径条数
+ **/
+#include<cstdio>
+#include<cstring>
+#include<cmath>
+using namespace std;
+const int N=105;
+const int dx[4]={0,0,1,-1},dy[4]={1,-1,0,0};
+int n,m,t;
+int X1,Y1,X2,Y2;
+bool mp[N][N];
+int f[N][N][17];
+//f[i][j][k]表示(i,j,k)表示在(i,j)点已走了k秒，到达终点的路线条数
+int dfs(int x,int y,int cnt)
+{
+    if(x==X2&&y==Y2&&cnt==t) return 1;
+    //if(cnt>=t) return 0; //这个优化也能过这题数据
+    if(abs(x-X2)+abs(y-Y2)>t-cnt)//最近的路所花费的时间
+        return 0;
+    if(f[x][y][cnt]!=-1)
+        return f[x][y][cnt];
+    int ans=0;
+    for(int i=0;i<4;i++)
+    {
+        int nx=x+dx[i],ny=y+dy[i];
+        if(nx<=0||nx>n||ny<=0||ny>m||mp[nx][ny])
+            continue;
+        ans+=dfs(nx,ny,cnt+1);
+    }
+    return f[x][y][cnt]=ans;
+}
+
+int main()
+{
+    memset(f,-1,sizeof(f));
+    scanf("%d%d%d",&n,&m,&t);
+    for(int i=1;i<=n;i++)
+    {
+        getchar();
+        for(int j=1;j<=m;j++)
+        {
+            char c=getchar();
+            if(c=='*')
+                mp[i][j]=1;
+        }
+    }
+    scanf("%d%d%d%d",&X1,&Y1,&X2,&Y2);
+    printf("%d",dfs(X1,Y1,0));
+}
