@@ -11,6 +11,8 @@
  *如果覆盖区间不连续，一定不能完全覆盖，求最后一行搜索时没访问到的个数就可以了
  *区间连续，利用左端点右端点贪心，左小为先，右大为次先
  *利用贪心操作区间覆盖
+ ***************
+ *加了读入优化，从83ms优化到63ms
  **/
 #include<cstdio>
 #include<cstring>
@@ -93,15 +95,33 @@ void solve(int& ans,int& Ans)
     }
     ans+=m-1-rr;//右端未覆盖的端点个数
 }
-
+void read(int& x)
+{
+    int f=1;
+    x=0;
+    char ch=getchar();
+    while(ch<'0'||ch>'9')
+    {
+        if(ch=='-') f=-1;
+        ch=getchar();
+    }
+    while(ch>='0'&&ch<='9')
+    {
+        x=x*10+ch-'0';
+        ch=getchar();
+    }
+    x*=f;
+}
 int main()
 {
     memset(f,-1,sizeof(f));
     memset(vst,0,sizeof(vst));
-    scanf("%d%d",&n,&m);
+    //scanf("%d%d",&n,&m);
+    read(n);read(m);
     for(int i=0;i<n;i++)
         for(int j=0;j<m;j++)
-            scanf("%d",&mp[i][j]);
+            //scanf("%d",&mp[i][j]);
+            read(mp[i][j]);
     for(int i=0;i<m;i++)
     {
         if(!vst[0][i])//记忆化
