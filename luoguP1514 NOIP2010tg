@@ -1,0 +1,132 @@
+/* luoguP1514 NOIP2010tg */
+/** 记忆化搜索+区间覆盖（贪心） **/
+/**
+ *给定n*m个地方的海拔，在第一行修蓄水厂，要求水能引到最下面一行的所有城市
+ *引水规则：海拔严格递减
+ *n,m<=500，海拔<=1e6
+ *求最少修建的蓄水厂，如果不能完全覆盖求出有几个城市水过不去
+ ****************
+ *分析：利用记忆化搜索搜出第一行每一个蓄水厂覆盖最后一行的区间
+ *这里的区间分为两种情况
+ *如果覆盖区间不连续，一定不能完全覆盖，求最后一行搜索时没访问到的个数就可以了
+ *区间连续，利用左端点右端点贪心，左小为先，右大为次先
+ *利用贪心操作区间覆盖
+ **/
+#include<cstdio>
+#include<cstring>
+#include<algorithm>
+using namespace std;
+const int N=505;
+const int dx[4]={0,0,1,-1},dy[4]={1,-1,0,0};
+int n,m,tot;
+int mp[N][N],f[N][N][2];
+//f[i][j][0]表示从(i,j)能到达最后一行的最左端点，1是最右端点。
+bool vst[N][N];
+struct node
+{
+    int L,R;
+    bool operator < (const node& b) const
+    {
+        if(this->L==b.L) return this->R>b.R;
+        return this->L<b.L;
+    }
+}a[N];
+void print();
+void dfs(int x,int y)
+{
+    vst[x][y]=true;
+    int l,r;
+    if(x==n-1)
+        l=r=y;//最后一行的初始值，至少是自己
+    else l=m,r=-1;//初始置左端点最大，右端点最小
+    for(int i=0;i<4;i++)
+    {
+        int nx=x+dx[i],ny=y+dy[i];
+        if(nx<0||nx>=n||ny<0||ny>=m||mp[x][y]<=mp[nx][ny])
+            continue;
+        if(!vst[nx][ny])//记忆化，没有访问过就搜
+            dfs(nx,ny);
+        if(~f[nx][ny][0])//这个点可以达到最下面
+            l=min(l,f[nx][ny][0]),r=max(r,f[nx][ny][1]);//更新最左、最右端点
+    }
+    if(l==m) l=r=-1;//如果达不到最下面一行就置-1
+    f[x][y][0]=l,f[x][y][1]=r;//得到最终值
+}
+void print()//debug用
+{
+    puts("L:");
+    for(int i=0;i<n;i++,putchar('\n'))
+        for(int j=0;j<m;j++)
+            printf("%d ",f[i][j][0]);
+    puts("R:");
+    for(int i=0;i<n;i++,putchar('\n'))
+        for(int j=0;j<m;j++)
+            printf("%d ",f[i][j][1]);
+    puts("");
+}
+void solve(int& ans,int& Ans)
+{
+    int i=0,rr=-1;//从数组第一个开始，rr置为最小
+    while(i<tot)
+    {
+        Ans++;//建这个蓄水站
+        if(a[i].L>rr+1)
+        //如果覆盖的区间左端点在上一个区间右端点的右边+1
+        //因为这个题是整点覆盖，不是所有值覆盖
+            ans+=a[i].L-rr-1;//没有覆盖的点计数
+        int r=a[i].R,j=i,k;
+        rr=r;//更新目前的最右端点
+        if(rr==m-1)//已到达
+            break;
+        while(j<tot)//j为目前这个区间的编号
+        {
+            for(k=j+1;k<tot;k++)//寻找j区间后面第一个与它左端点不同的区间
+                if(a[k].L!=a[j].L)
+                    break;
+            if(k==tot||a[k].L>r+1)
+            //如果没有了/这个新区间的左端点已经超过了已覆盖区间的最右端点
+                break;
+            j=k;//将目前区间改为找到的区间
+        }
+        if(i==j) i=k;//没有找到左端点在目前已覆盖范围内的区间
+        else i=j;
+    }
+    ans+=m-1-rr;//右端未覆盖的端点个数
+}
+
+int main()
+{
+    memset(f,-1,sizeof(f));
+    memset(vst,0,sizeof(vst));
+    scanf("%d%d",&n,&m);
+    for(int i=0;i<n;i++)
+        for(int j=0;j<m;j++)
+            scanf("%d",&mp[i][j]);
+    for(int i=0;i<m;i++)
+    {
+        if(!vst[0][i])//记忆化
+            dfs(0,i);//搜索
+        if(~f[0][i][0]) //如果搜过的这个点可以达到最下面一行
+        {
+            a[tot].L=f[0][i][0];
+            a[tot].R=f[0][i][1];
+            tot++;//将值存在node型数组中
+        }
+    }
+    //print();
+    int ans=0,Ans=0;//ans记没有覆盖到的，Ans记蓄水站数量
+    for(int i=0;i<m;i++)
+        if(!vst[n-1][i]) //最后一行没访问到的计数
+            ans++;
+    if(ans)//有没访问到的，输出答案
+    {
+        printf("0\n%d",ans);
+        return 0;
+    }
+    sort(a,a+tot);//按区间左小右大排序
+    solve(ans,Ans);//区间覆盖：贪心
+    if(ans)
+        printf("0\n%d",ans);
+    else printf("1\n%d",Ans);
+    return 0;
+}
