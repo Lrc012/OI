@@ -1,0 +1,70 @@
+/* luoguP1144 */
+/** bfs最短路 **/
+/**
+ *n顶点m条边的无向无权图，输出从1顶点到其他各点的最短路条数
+ *可能有自环/重边
+ **/
+#include<cstdio>
+#include<queue>
+using namespace std;
+const int N=1e6+5,mod=1e5+3;
+int n,m,ans;
+int vst[N],d[N];
+vector<int> mp[N];
+void read(int& x){
+    x=0;
+    int f=1;
+    char ch=getchar();
+    while(ch<'0'||ch>'9'){
+        if(ch=='-') f=-1;
+        ch=getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x=x*10+ch-'0';
+        ch=getchar();
+    }
+    x*=f;
+}
+
+int main()
+{
+    read(n),read(m);
+    int x,y;
+    for(int i=0;i<m;i++)
+    {
+        read(x),read(y);
+        if(x==y) //显然重边一定不会参与任何最短路的计数
+            continue;
+        mp[x].push_back(y);
+        mp[y].push_back(x);
+    }
+    queue<int> q;//本来用的是pair，但不是优先队列所以不需要了，改过优化了20ms
+    q.push(1);
+    vst[1]=1,d[1]=0;
+    while(!q.empty())//BFS
+    {
+        int cur=q.front(),len=mp[cur].size();
+        int tot=d[cur];
+        q.pop();
+        for(int i=0;i<len;i++)
+        {
+            int nxt=mp[cur][i];
+            if(vst[nxt]==0) //这个点没到过，根据bfs知此时一定是最短路
+            {
+                vst[nxt]=vst[cur];
+                //第一遍写全部push拿出判断MLE了，所以不重复加入队列
+                //到nxt的最短路目前跟cur一样多
+                d[nxt]=tot+1;//最短路
+                q.push(nxt);
+            }
+            else if(d[nxt]<tot+1)//如果到这点不是最短路，一定不会产生其他最短路
+                continue;
+            else vst[nxt]=(vst[nxt]+vst[cur])%mod;
+        }
+        //printf("%d:%d %d\n",cur,vst[cur],d[cur]);
+    }
+    for(int i=1;i<=n;i++)
+        printf("%d\n",vst[i]);
+    return 0;
+}
+
