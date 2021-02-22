@@ -1,0 +1,142 @@
+/* luoguP3953 NOIP2017tg */
+/** 最短路+记忆化搜索 **/
+/**
+ *n个节点m条有向带权边的图，无自环和重边，从1进，n出
+ *设最短路长度为d，给定k和p，求不超过k+d长度的路径个数mod p的结果
+ *若路径有无数条则输出-1
+ **/
+/*********************************
+ *优化dfs：改进为递推
+ *经过两遍Dijkstra，我们已经有反向图（n出发）到各点的最短路径
+ *f[u][j]表示从u出发到n，比最短路多了j的路有多少条，v是u的后继
+ *f[u][j]=Σ(f[v][j-temp])，其对于每个v，temp=dd[v]+Value(u,v)-dd[u]
+ *而这个累和，比较符合记忆化搜索的思路，直接递推不好转移
+ *从1点dfs找路，利用反向图得到的最短路径剪枝
+ *********************************/
+#include<cstdio>
+#include<queue>
+#include<cstring>
+#include<utility>
+#include<iostream>
+using namespace std;
+#define INF 0x7fffffff
+typedef pair<int,int> P;
+const int N=1e5+3;
+int n,m,k,p,ans;
+int tot,minn;
+int head[N];//正向建图的索引
+int hd[N],dd[N];//反向建图的索引，dd[i]表示i点到n点的最短距离
+int f[N][52];
+bool vst[N],Vst[N][52];//vst用于Dijkstra找最短路，Vst用于记忆化搜索
+bool flag;
+void read(int& x){
+    x=0;
+    int f=1;
+    char ch=getchar();
+    while(ch<'0'||ch>'9'){
+        if(ch=='-') f=-1;
+        ch=getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x=x*10+ch-'0';
+        ch=getchar();
+    }
+    x*=f;
+}
+struct Edge
+{
+    int u,v,val,nxt,frm;
+}edge[N<<1];
+void add_edge()//建图
+{
+    int u,v,val;
+    read(u),read(v),read(val);
+    edge[++tot].u=u;
+    edge[tot].v=v;
+    edge[tot].val=val;
+    edge[tot].nxt=head[u];
+    edge[tot].frm=hd[v];//反向建图
+    head[u]=tot;
+    hd[v]=tot;
+}
+int dfs(int x,int t)//到x节点，剩余t个长度可以多走
+{
+    if(Vst[x][t])
+    //x节点剩余t个长度可以多走的状态在刚刚递归的过程中
+    //因此这一定是一个长度为0的环，因此答案是-1
+    {
+        flag=true;
+        return 0;
+    }
+    if(f[x][t]) //记忆化
+        return f[x][t];
+    Vst[x][t]=true;
+    int sum=0;//求和
+    for(int i=head[x];~i;i=edge[i].nxt)
+    {
+        int temp=dd[edge[i].v]+edge[i].val-dd[x];
+        //如果选择这条路，多走的长度为temp
+        if(t-temp<0||t-temp>k)//这条路可以选择
+            continue;
+        sum=(sum+dfs(edge[i].v,t-temp))%p;
+        if(flag) return 0;//如果在后面搜索中遇到了0环，直接退出
+    }
+    if(x==n&&!t) sum=1;
+    //注意1：不需要f[n][0~k]=1，因为通路的话f[i][j]会递归到f[n][j]，避免重复计算
+    //注意2：不能在进行记忆化搜索前f[n][0]=1
+    //       这样写能够保证到了n点后从n点继续往后搜索，防止n点在0环上的结果错误
+    Vst[x][t]=false;
+    return f[x][t]=sum;
+}
+void dijkstra()
+{
+    priority_queue<P,vector<P>,greater<P> > q;
+    for(int i=1;i<=n;i++)
+        dd[i]=INF;
+    q.push(P(0,n));
+    dd[n]=0;
+    while(!q.empty())
+    {
+        int cur=q.top().second;
+        q.pop();
+        if(vst[cur])
+            continue;
+        vst[cur]=true;
+        for(int i=hd[cur];~i;i=edge[i].frm)
+        {
+            int to=edge[i].u,value=edge[i].val;
+            if(dd[to]>dd[cur]+value)
+            {
+                dd[to]=dd[cur]+value;
+                q.push(P(dd[to],to));
+            }
+        }
+    }
+}
+int main()
+{
+    int t;
+    read(t);
+    while(t--)
+    {
+        memset(head,-1,sizeof(head));
+        memset(hd,-1,sizeof(hd));
+        memset(vst,0,sizeof(vst));
+        tot=minn=ans=0;
+        flag=false;
+        memset(f,0,sizeof(f));
+        //清零
+        read(n),read(m),read(k),read(p);
+        for(int i=1;i<=m;i++)
+            add_edge();
+        dijkstra();//对反向图跑最短路，得到各点到n点的最短路
+        for(int i=0;i<=k;i++)
+        {
+            memset(Vst,0,sizeof(Vst));
+            ans=(ans+dfs(1,i))%p;
+            if(flag) break;
+        }
+        printf("%d\n",flag?-1:ans);
+    }
+    return 0;
+}
