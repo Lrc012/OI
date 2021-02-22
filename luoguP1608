@@ -1,0 +1,181 @@
+/* luoguP1608 */
+/** 最短路计数 **/
+/**
+ *n顶点m条边的有向有权图，输出从1顶点到n顶点的最短路长度和条数
+ *没有最短路输出No answer
+ *n<=2000,1<=边长<=10
+ *可能有重边
+ **/
+/*********************
+ *邻接矩阵存图（比后面的前向星优化了40ms）
+ *********************/
+#include<cstdio>
+#include<utility>
+#include<queue>
+#include<cstring>
+#include<vector>
+using namespace std;
+#define _rep(i,a,b) for(i=a;i<=b;i++)
+typedef pair<int,int> P;
+const int N=2e3,INF=0x7fffffff;
+int n,m,ans,tot;
+int f[N+5],d[N+5],head[N+5],mp[N+5][N+5];
+bool vst[N+5];
+void read(int& x){
+    x=0;
+    int f=1;
+    char ch=getchar();
+    while(ch<'0'||ch>'9'){
+        if(ch=='-') f=-1;
+        ch=getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x=x*10+ch-'0';
+        ch=getchar();
+    }
+    x*=f;
+}
+void dijkstra()
+{
+    fill(d+1,d+n+1,INF);
+    priority_queue<P,vector<P>,greater<P> > dij;
+    dij.push(P(0,1));
+    d[1]=0,f[1]=1;
+    while(!dij.empty())
+    {
+        int cur=dij.top().second;
+        dij.pop();
+        if(vst[cur])
+            continue;
+        vst[cur]=true;
+        int v;
+        _rep(v,1,n)
+        {
+            int value=mp[cur][v];
+            if(!value) continue;
+            if(d[v]>d[cur]+value)
+            {
+                d[v]=d[cur]+value;
+                f[v]=f[cur];
+                dij.push(P(d[v],v));
+            }
+            else if(d[v]==d[cur]+value)
+                f[v]+=f[cur];
+        }
+    }
+}
+int main()
+{
+    read(n),read(m);
+    memset(head,-1,sizeof(head));
+    int i,u,v,value;
+    _rep(i,1,m)
+    {
+        read(u),read(v),read(value);
+        if(mp[u][v]==0||mp[u][v]>value)
+            mp[u][v]=value;
+    }
+    dijkstra();
+    if(d[n]==INF)
+        puts("No answer");
+    else printf("%d %d",d[n],f[n]);
+    return 0;
+}
+
+/*
+/*********************
+ *前向星存图，然而这题条件写邻接矩阵最方便
+ *注意：代码中有前向星对重边的处理：
+ *存一个邻接矩阵（真是用前向星多此一举...）若边长有更小的就添加边
+ *目的：更新的时候长边不影响，这样操作相同大小的边就不会多算
+ *********************/
+#include<cstdio>
+#include<utility>
+#include<queue>
+#include<cstring>
+#include<vector>
+using namespace std;
+#define _rep(i,a,b) for(i=a;i<=b;i++)
+typedef pair<int,int> P;
+const int N=2e3,INF=0x7fffffff;
+int n,m,ans,tot;
+int f[N+5],d[N+5],head[N+5],mp[N+5][N+5];
+//f[i]：1到i最短路个数，d[i]：1到i最短路长度
+bool vst[N+5];
+void read(int& x){
+    x=0;
+    int f=1;
+    char ch=getchar();
+    while(ch<'0'||ch>'9'){
+        if(ch=='-') f=-1;
+        ch=getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x=x*10+ch-'0';
+        ch=getchar();
+    }
+    x*=f;
+}
+struct Edge
+{
+    int to,from,val,nxt;
+}edge[N*(N-1)+5];
+void add_edge(int u,int v,int value)
+{
+    int x=++tot;
+    edge[x].from=u;
+    edge[x].to=v;
+    edge[x].val=value;
+    edge[x].nxt=head[u];
+    head[u]=x;
+}
+void dijkstra()//最短路计数的dijkstra
+{
+    fill(d+1,d+n+1,INF);
+    priority_queue<P,vector<P>,greater<P> > dij;
+    dij.push(P(0,1));
+    d[1]=0,f[1]=1;
+    while(!dij.empty())
+    {
+        int cur=dij.top().second;
+        dij.pop();
+        if(vst[cur])
+            continue;
+        vst[cur]=true;
+        for(int i=head[cur];~i;i=edge[i].nxt)
+        {
+            int v=edge[i].to,value=edge[i].val;
+            if(d[v]>d[cur]+value)
+            {
+                d[v]=d[cur]+value;
+                f[v]=f[cur];//目前已知的最短路作废，数量更新为与上个节点相同
+                dij.push(P(d[v],v));
+            }
+            else if(d[v]==d[cur]+value)
+                f[v]+=f[cur];//这也是一条最短路，数量相加
+        }
+    }
+}
+int main()
+{
+    read(n),read(m);
+    memset(head,-1,sizeof(head));
+    memset(vst,0,sizeof(vst));
+    memset(f,0,sizeof(f));
+    int i,u,v,value;
+    _rep(i,1,m)
+    {
+        read(u),read(v),read(value);
+        if(mp[u][v]==0||mp[u][v]>value)//如果这个边没有/已有的边长比这个长
+        {
+            add_edge(u,v,value);
+            mp[u][v]=value;
+        }
+    }
+    dijkstra();
+    if(d[n]==INF)
+        puts("No answer");
+    else printf("%d %d",d[n],f[n]);
+    return 0;
+}
+*/
