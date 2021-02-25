@@ -1,0 +1,43 @@
+/* Gym 102500E */
+/** 精度问题 **/
+/**
+ *给定4轮分数，和合格分数，一共五轮，去掉最高分最低分取平均
+ *分数在1-20之间，都有两位小数，输出也保留两位小数
+ *求第5轮分数，使得不合格但平均分最高
+ *如果无论第五轮什么分都不合格，输出infinite；如果怎样都合格，输出impossible
+ *****************************************
+ *坑：小数的二进制储存会出问题，这题只有两位所以转换成整型
+ *保留小数：在比较大小时单独写cmp函数：
+int cmp(double k)
+{
+    if(k>eps) return 1;//大于
+    else if(k<-eps) return -1;//小于
+    else return 0;//相同
+}
+ **/
+#include<cstdio>
+#include<algorithm>
+using namespace std;
+const double INF=1e-2;
+int a[5];
+int main()
+{
+    int x,y;
+    for(int i=0;i<5;i++)
+    {
+        scanf("%d.%d",&x,&y);
+        a[i]=x*100+y;
+    }
+    sort(a,a+4);
+    y=a[4]*3;
+    if(a[3]+a[1]+a[2]<=y)
+        puts("infinite");
+    else if(a[0]+a[1]+a[2]>y)
+        puts("impossible");
+    else
+    {
+        x=y-a[1]-a[2];
+        printf("%.2f",(double)x/100.0);
+    }
+    return 0;
+}
