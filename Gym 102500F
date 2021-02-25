@@ -1,0 +1,101 @@
+/* Gym - 102500F */
+/** STL 模拟 **/
+/**
+ *1e9的路，从0每个整点都有一个坑可以种树
+ *给定n个区间，左端点l和右端点r，区间长度不小于10，区间不重叠，最多端点重合
+ *给定p个整点，表示那里已经种了树
+ *要求每个区间恰好种两棵树（重合端点的树两个区间都算）
+ *求最少种的树，并输出在哪里多种的
+ *如果不能达到要求输出impossible
+ **/
+#include<cstdio>
+#include<set>
+using namespace std;
+int n,p;
+const int N=1e3+5;
+int l[N],r[N];
+set<int> a,b;
+void read(int& x){
+    x=0;
+    int f=1;
+    char ch=getchar();
+    while(ch<'0'||ch>'9'){
+        if(ch=='-') f=-1;
+        ch=getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x=x*10+ch-'0';
+        ch=getchar();
+    }
+    x*=f;
+}
+int main()
+{
+    read(n);
+    for(int i=0;i<n;i++)
+        read(l[i]),read(r[i]);
+    read(p);
+    for(int i=0;i<p;i++)
+    {
+        int x;
+        read(x);
+        b.insert(x);//保留原种树记录
+        a.insert(x);
+    }
+    int ans=0;
+    auto it=a.begin();
+    for(int i=0;i<n;i++)
+    {
+        int cnt=0;
+        it=a.lower_bound(l[i]);//找到不小于左端点的第一个位置
+        //printf("%d %d ",i,*it);
+        while(it!=a.end()&&r[i]>=*it)//数这个区间里已经有了多少棵树
+        {
+            cnt++;
+            it++;
+        }
+        if(cnt>=4)//如果大于4棵无药可救
+        {
+            puts("impossible");
+            return 0;
+        }
+        if(cnt==3)//如果是三棵可能是上一个区间与这个区间重叠端点种树了
+        //这里好像写繁了
+        {
+            if(b.find(l[i])!=b.end()||a.find(l[i])==a.end())
+            {//如果是原来种的树在端点/端点压根没树，区间里原本就有3棵
+                puts("impossible");//无药可救
+                return 0;
+            }
+            int c=l[i];//改一下后种的在端点的树
+            while(a.find(c)!=a.end())
+                c--;//10米的区间保证一定能找到位置种
+            a.erase(l[i]);
+            a.insert(c);//改种在c
+        }
+        else if(cnt==0)//一棵树都没
+        {
+            ans+=2;//种两颗
+            a.insert(r[i]);//贪心，优先种右端点
+            a.insert((l[i]+r[i])>>1);//随便取一个区间内数
+        }
+        else if(cnt==1)//有一棵
+        {
+            ans++;//种一棵
+            if(a.find(r[i])==a.end())//右端点没树
+                a.insert(r[i]);//贪心优先右端点
+            else {//右端点有树
+            int y=r[i]-1;
+            while(a.find(y)!=a.end())//往前找一个没树的种
+                y--;
+            a.insert(y);
+            }
+        }
+        //printf("%d\n",cnt);
+    }
+    printf("%d\n",ans);
+    for(it=a.begin();it!=a.end();it++)
+        if(b.find(*it)==b.end())//不是原本种的树
+            printf("%d ",*it);//输出
+    return 0;
+}
