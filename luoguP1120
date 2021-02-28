@@ -1,0 +1,94 @@
+/* luoguP1120 */
+/** dfs+疯狂剪枝 **/
+/**
+ *给定n个小木棍长度（如果超过50须排除）大，n<=65
+ *恰好用完这些小木棍拼出一些长度相同的木棍，使得大木棍尽可能长
+ *求最小长度
+ ***************************
+ *疯狂剪枝。。。
+ **/
+#include<cstdio>
+#include<algorithm>
+using namespace std;
+int n,maxn,minn=55;
+int ans,tot,sum;
+int a[55];
+void read(int& x){
+    x=0;
+    int f=1;
+    char ch=getchar();
+    while(ch<'0'||ch>'9'){
+        if(ch=='-') f=-1;
+        ch=getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x=x*10+ch-'0';
+        ch=getchar();
+    }
+    x*=f;
+}
+void dfs(int ave,int cnt,int cur,int last)
+//ave是大木棍长度，cnt是目标大木棍数目-目前已经拼成的大木棍数目
+//cur是这一根已经有的长度,last是上一个用的木棍长度
+{
+    if(cnt==1)//根据整除性，剩最后一个一定可以拼成
+    {
+        printf("%d",ave);
+        exit(0);//可借鉴，不需要添加复杂的标记变量
+    }
+    if(cur==ave)
+    {
+        for(int i=maxn;i>=minn;i--)//从最大的开始搜索
+        //利用木棍[minn,maxn]的范围优化枚举
+            if(a[i])
+            {
+                a[i]--;
+                dfs(ave,cnt-1,i,i);
+                a[i]++;
+                return;
+                //如果这根木棍失败了才会回溯
+                //此时最优情况是用i，然而用了i没办法拼到ave，那就是前面拼错了
+            }
+        return;
+    }
+    int i=min(last,ave-cur);
+    //最大长度从上一根/目前还需要的长度的小者开始搜
+    for(i;i>=minn;i--)
+    {
+        if(!a[i])
+            continue;
+        a[i]--;
+        dfs(ave,cnt,cur+i,i);
+        a[i]++;
+        if(cur+i==ave)
+            return;
+        //如果目前的与i这根拼起来正好与目标相同
+        //然而拼失败了，小木棍一定比大木棍灵活，剩下的小的更不可能拼成了
+    }
+}
+
+int main()
+{
+    read(n);
+    int x;
+    for(int i=0;i<n;i++)
+    {
+        read(x);
+        if(x>50)
+            continue;
+        a[x]++;//计数
+        maxn=max(x,maxn);//所有木棍长度最大值
+        minn=min(x,minn);//所有木棍长度最小值
+        sum+=x;//木棍长度之和
+        tot++;//<=50的木棍个数
+    }
+    for(int i=maxn;i<=sum;i++)
+        if(sum%i==0)//小木棍之和一定能把凑成大木棍的长度整除
+        {
+            a[maxn]--;
+            //从最大的开始搜索，因为小木棍的使用一定比大木棍灵活
+            dfs(i,sum/i,maxn,maxn);
+            a[maxn]++;
+        }
+    return 0;
+}
