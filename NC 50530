@@ -1,0 +1,84 @@
+/* NC 50530*/
+/** dp+单调队列 **/
+/**
+ *编号1~n的奶牛，效率分别为Ei，不能用连续超过k只奶牛
+ *1<=n<=1e5，0<=Ei<=1e9
+ *求最大效率
+ *输入n与k，然后是n个数表示Ei
+ *************************
+ *分析：不能连续选k只相当于每k+1只必须去掉一个
+ *使去掉的效率值和最小，ΣEi减去去掉的就是最大效率
+ *****
+ *O(n*k)：设dp[i]表示前i个已满足条件的最小效率
+ *dp[i]=min(dp[i-k~i-1])+e[i]
+ *考虑并不需要后面的数据，在读入的时候进行上述状态方程转移
+ *牛客608ms AC
+ *****
+ *单调队列优化：考虑到每次都只在之前k个找
+ *牛客11ms AC
+ **/
+#include<cstdio>
+#include<algorithm>
+#include<cstring>
+using namespace std;
+const int N=1e5+5;
+typedef long long ll;
+int n,k;
+ll dp[N],q[N];
+int p[N];
+template<class T>
+void read(T& x){
+    x=0;
+    int f=1;
+    char ch=getchar();
+    while(ch<'0'||ch>'9'){
+        if(ch=='-') f=-1;
+        ch=getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x=x*10+ch-'0';
+        ch=getchar();
+    }
+    x*=f;
+}
+int main()
+{
+    ll sum=0;
+    read(n),read(k);
+    k++;
+    int head=0,tail=0;
+/*  O(n*k) 写法，608ms AC
+    for(int i=1;i<=n;i++)
+    {
+        read(dp[i]);
+        ll temp=dp[i-1];
+        for(int j=max(0,i-k);j<i;j++)
+            temp=min(temp,dp[j]);
+        sum+=dp[i];
+        dp[i]+=temp;
+        for(int j=1;j<=n;j++)
+            printf("%d ",dp[j]);
+        putchar('\n');
+    }
+*/
+    for(int i=1;i<=n;i++)
+    {
+        read(dp[i]);
+        sum+=dp[i];
+        dp[i]+=q[head];
+        while(head<=tail&&q[tail]>=dp[i])
+            tail--;
+        q[++tail]=dp[i];
+        p[tail]=i;
+        while(p[head]<=i-k)
+            head++;
+        //for(int j=1;j<=n;j++)
+         //   printf("%d ",dp[j]);
+        //putchar('\n');
+    }
+    ll ans=sum;
+    for(int i=n;i>n-k;i--)
+        ans=min(ans,dp[i]);
+    printf("%lld",sum-ans);
+    return 0;
+}
