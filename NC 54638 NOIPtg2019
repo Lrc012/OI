@@ -1,0 +1,163 @@
+/* NC 54638 / NOIPtg2019 */
+/** dp+单调队列+__int128 **/
+/**
+ *输入n和type
+ *type=0：给定n个数，不变顺序将其划分成几段，使得每一段之和递增，每一段平方之和最小
+ *******************
+ *O(n^2)做法：64pts
+ *sum[i]为前缀和，last[i]表示以i结尾的一段的和，f[i]表示以i结尾的前面的平方之和，答案即f[n]
+ *f[i]=min(f[j]+(sum[i]-sum[j])^2)，条件sum[i]-sum[j]>=last[j]
+ *******
+ *优化：88pts
+ *上述条件：sum[i]>=last[j]+sum[j]，由(a+b)^2>a^2+b^2，贪心使后面的分段尽量小
+ *用单调队列维护last[j]+sum[j]的值，从而得到最大的j
+ *******
+ *type=1：开__int128，为节省空间省去f数组，利用一个pre数组转移到每一个分区的位置
+ **/
+/*
+#include<cstdio>
+using namespace std;
+typedef long long ll;
+typedef __int128 LL;
+const int N=5e5+5,mod=1<<30,M=4e7+5;
+int n,type;
+ll a[N],f[N],last[N];//a数组即sum数组
+int p[N];
+template<class T>
+void read(T& x){
+    x=0;
+    int f=1;
+    char ch=getchar();
+    while(ch<'0'||ch>'9'){
+        if(ch=='-') f=-1;
+        ch=getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x=x*10+ch-'0';
+        ch=getchar();
+    }
+    x*=f;
+}
+int main()
+{
+    read(n),read(type);
+    for(int i=1;i<=n;i++)
+    {
+        read(a[i]);
+        a[i]+=a[i-1];
+    }
+/*  O(n^2) 64pts
+    f[1]=a[1]*a[1];
+    last[1]=a[1];
+    for(int i=2;i<=n;i++)
+    {
+        for(int j=0;j<i;j++)
+        {
+            ll x=(a[i]-a[j])*(a[i]-a[j]);
+            if(!f[i]||(a[i]-a[j]>=last[j]&&f[j]+x<f[i]))
+                f[i]=f[j]+x,last[i]=a[i]-a[j];
+        }
+    }
+    printf("%lld",f[n]);
+*/
+/*  单调队列 88pts  */
+    int head=0,tail=0;
+
+    for(int i=1;i<=n;i++)
+    {
+        while(head<tail&&last[p[head+1]]+a[p[head+1]]<=a[i])
+            head++;//找单调队列中序列最靠后的
+        last[i]=a[i]-a[p[head]];
+        f[i]=f[p[head]]+last[i]*last[i];
+        //下面出队操作为什么一定要写在最后？
+        while(head<tail&&last[p[tail]]+a[p[tail]]>=last[i]+a[i])
+            tail--;//和越大越不容易满足条件，p[tail]一定比i小，由贪心知可以被舍去
+        p[++tail]=i;
+    }
+    printf("%lld",f[n]);
+    return 0;
+}
+*/
+//AC
+#include<cstdio>
+using namespace std;
+#define calc(x) (a[x]*2-a[pre[x]])
+typedef long long ll;
+typedef __int128 LL;
+const int N=4e7+5,mod=1<<30,M=5e5+5;
+int n,type;
+ll a[N],b[N];
+int p[M],pre[N],l[M],r[M],q[N];
+template<class T>
+void read(T& x){
+    x=0;
+    int f=1;
+    char ch=getchar();
+    while(ch<'0'||ch>'9'){
+        if(ch=='-') f=-1;
+        ch=getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x=x*10+ch-'0';
+        ch=getchar();
+    }
+    x*=f;
+}
+void write(LL x)
+{
+    if(x>9)
+        write(x/10);
+	putchar(x%10+'0');
+}
+int main()
+{
+    read(n),read(type);
+    if(!type)
+    {
+        for(int i=1;i<=n;i++)
+        {
+            read(a[i]);
+            a[i]+=a[i-1];
+        }
+    }
+    else
+    {
+        int x,y,z,m,now=1;
+        read(x),read(y),read(z);
+		read(b[1]),read(b[2]),read(m);
+		for(int i=1;i<=m;i++)
+			read(p[i]),read(l[i]),read(r[i]);
+		for(int i=3;i<=n;i++)
+			b[i]=(x*b[i-1]+y*b[i-2]+z)%mod;
+		for(int i=1;i<=n;i++)
+		{
+			if(i>p[now]) now++;
+			a[i]=a[i-1]+(b[i]%(r[now]-l[now]+1))+l[now];
+		}
+	}
+    int head=1,tail=1;
+    for(int i=1;i<=n;i++)
+	{
+		while(head<tail && calc(q[head+1])<=a[i])
+            head++;
+		pre[i]=q[head];
+		while(head<tail && calc(q[tail])>=calc(i))
+		    tail--;
+		q[++tail]=i;
+	}
+	int now=n;
+	LL ans=0;
+	while(now)
+	{
+        ans+=((LL)a[now]-a[pre[now]])*(a[now]-a[pre[now]]);
+        now=pre[now];
+	}
+    write(ans);
+    return 0;
+}
+
+
+
+
+
+
