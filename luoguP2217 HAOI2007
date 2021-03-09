@@ -1,0 +1,77 @@
+/* luoguP2217 HAOI2007 */
+/** 记忆化搜索+矩阵 **/
+/**
+ *a*b的矩阵，沿数字缝隙分割n-1次，得到n个矩阵
+ *矩形的得分为其中所有数之和
+ *求n个矩阵的均方差（标准差）最小值
+ ********
+ *输入a,b,n，以及a*b的矩阵，1<=a,b,n<=10
+ *输出均方差的最小值
+ *******************
+ *注意1：矩阵和的表示方法：sum[i][j]=sum[i-1][j]+sum[i][j-1]-sum[i-1][j-1]
+         计算子矩阵(a,b,c,d)（即(a,b)(c,d)为左上右下角）：sum[c][d]-sum[a-1][d]-sum[c][b-1]+sum[a-1][b-1]
+ *注意2：矩阵dp的表示方法：dp[a][b][c][d][k]，k是第五维的参数，a,b,c,d表示子矩阵的两个横坐标和两个纵坐标
+ **/
+#include<cstdio>
+#include<algorithm>
+#include<cmath>
+using namespace std;
+const int N=12,inf=1e5;
+int a,b,n;
+int sum[N][N];
+double dp[N][N][N][N][N];
+double ave;
+template<class T>
+void read(T& x){
+    x=0;
+    int f=1;
+    char ch=getchar();
+    while(ch<'0'||ch>'9'){
+        if(ch=='-') f=-1;
+        ch=getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x=x*10+ch-'0';
+        ch=getchar();
+    }
+    x*=f;
+}
+inline double sqr(double x)
+{
+    return x*x;
+}
+inline double calc(int a,int b,int c,int d)
+{
+    return (double)(sum[c][d]-sum[a-1][d]-sum[c][b-1]+sum[a-1][b-1]);
+}
+double dfs(int x1,int y1,int x2,int y2,int cnt)
+{
+    double& re=dp[x1][y1][x2][y2][cnt];
+    if(re>0)
+        return re;
+    if(cnt==1)
+        return re=sqr(calc(x1,y1,x2,y2)-ave);
+    re=1e9;
+    //竖着切：[b,d)
+    for(int i=y1;i<y2;i++)
+        for(int j=1;j<cnt;j++)
+            re=min(re,dfs(x1,y1,x2,i,j)+dfs(x1,i+1,x2,y2,cnt-j));
+    //横着切：[a,c)
+    for(int i=x1;i<x2;i++)
+        for(int j=1;j<cnt;j++)
+            re=min(re,dfs(x1,y1,i,y2,j)+dfs(i+1,y1,x2,y2,cnt-j));
+    return re;
+}
+int main()
+{
+    read(a),read(b),read(n);
+    for(int i=1;i<=a;i++)
+        for(int j=1;j<=b;j++)
+        {
+            read(sum[i][j]);
+            sum[i][j]+=sum[i-1][j]+sum[i][j-1]-sum[i-1][j-1];
+        }
+    ave=(double)sum[a][b]/n;
+    printf("%.2lf",sqrt(dfs(1,1,a,b,n)/n));
+    return 0;
+}
