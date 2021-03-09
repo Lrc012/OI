@@ -1,0 +1,76 @@
+/* luoguP2254 NOI2005 */
+/** dp **/
+/**
+ *n*m的地图，起始位置(x,y)，有k个状态，n,m,k<=200,T<=4e5
+ *给出地图，x为有障碍，.为无障碍
+ *一共k行，输入s,t,d，表示在[s,t]这个时间段移动方向为d（1北，2南，3西，d东）
+ *任意时刻都可以停住不动
+ *求不撞到障碍物的最远移动长度
+ *************
+ *k小，T大，且在时间段内向一个方向移动，考虑将k作为dp的一维
+ *dp思路：找上一个状态中，合法的位置
+ *无优化，复杂度O(k*m*n*T)，合理break后能AC
+ **/
+#include<cstdio>
+#include<cstring>
+#include<algorithm>
+using namespace std;
+const int N=205;
+const int dx[5]={0,-1,1,0,0},dy[5]={0,0,0,-1,1};
+int dp[N][N][N],dir[N];
+bool mp[N][N];
+int n,m,x,y,k;
+template<class T>
+void read(T& x){
+    x=0;
+    int f=1;
+    char ch=getchar();
+    while(ch<'0'||ch>'9'){
+        if(ch=='-') f=-1;
+        ch=getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x=x*10+ch-'0';
+        ch=getchar();
+    }
+    x*=f;
+}
+int main()
+{
+    read(n),read(m),read(x),read(y),read(k);
+    for(int i=1;i<=n;i++,getchar())
+        for(int j=1;j<=m;j++)
+            if((getchar())=='x')
+                mp[i][j]=1;
+    memset(dp,-1,sizeof(dp));
+    dp[0][x][y]=0;
+    int s,t,d;
+    for(int z=1;z<=k;z++)
+    {
+        read(s),read(t),read(d);
+        for(int i=1;i<=n;i++)
+            for(int j=1;j<=m;j++)
+            {
+                if(mp[i][j])
+                    continue;
+                int nx=i,ny=j;
+                dp[z][i][j]=max(dp[z][i][j],dp[z-1][nx][ny]);
+                for(int a=1;a<=t-s+1;a++)//在这个方向移动a步
+                {
+                    nx-=dx[d],ny-=dy[d];
+                    if(nx<1||nx>n||ny<1||ny>m||mp[nx][ny])
+                        break;//直线，有障碍可以直接退出
+                    if(dp[z-1][nx][ny]==-1)
+                        continue;
+                    dp[z][i][j]=max(dp[z][i][j],dp[z-1][nx][ny]+a);
+                    //printf("%d:%d %d %d %d %d\n",z,i,j,nx,ny,a);
+                }
+            }
+    }
+    int ans=0;
+    for(int i=1;i<=n;i++)
+        for(int j=1;j<=m;j++)
+            ans=max(ans,dp[k][i][j]);
+    printf("%d",ans);
+    return 0;
+}
