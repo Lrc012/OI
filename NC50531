@@ -1,0 +1,88 @@
+/* NC50531 */
+/** 单调队列 **/
+/**
+ *n个车站，3<=n<=1e6
+ *每个车站有油pi，到下个车站需要油di，0<=pi<=2e9，0<di<=2e9
+ *从第i个车站出发，顺时针或逆时针绕一圈回到这个车站，中间不能出现油不够的情况
+ *输出第i个车站能不能绕一圈
+ *********************
+ *拆环成链，以a[1]~a[n],a[n+1]~a[n+n]分别表示第i个车站的净油量（pi-di）
+ *以前缀和sum[i]储存a[1]~a[i]的和
+ *如果a[i]可以走到a[i+n-1]，则sum[i~i+n-1]-sum[i-1]都大于0
+ *只需要一个单调队列，窗口长度为n，维护sum最小值
+ *顺时针与逆时针只要一个能走通就行，所以要算正着反着两个sum
+ *反着的sum倒着存，倒着读
+ */
+#include<cstdio>
+using namespace std;
+typedef long long ll;
+const int N=1e6+5;
+int a[N<<1],b[N<<1],p[N<<1];
+ll sum[N<<1];
+int n;
+bool ans[N];
+template<class T>
+void read(T& x){
+    x=0;
+    int f=1;
+    char ch=getchar();
+    while(ch<'0'||ch>'9'){
+        if(ch=='-') f=-1;
+        ch=getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x=x*10+ch-'0';
+        ch=getchar();
+    }
+    x*=f;
+}
+int main()
+{
+    read(n);
+    int x,y;
+    for(int i=1;i<=n;i++)
+    {
+        read(a[i]),read(b[i]);
+        sum[i+n]=sum[i]=a[i]-b[i];
+        sum[i]+=sum[i-1];
+    }
+    for(int i=n+1;i<=n<<1;i++)
+        sum[i]+=sum[i-1];
+    //顺时针走
+    int head=1,tail=0;
+    for(int i=1;i<=n<<1;i++)
+    {
+        while(head<=tail&&sum[i]<=sum[p[tail]])
+            tail--;
+        p[++tail]=i;
+        while(head<=tail&&i-p[head]>=n)
+            head++;
+        if(i>=n&&sum[p[head]]>=sum[i-n])
+            ans[i-n+1]=true;
+    }
+    //逆时针走
+    sum[1]=sum[1+n]=a[1]-b[n];
+    for(int i=2;i<=n;i++)
+        sum[i]=sum[i+n]=a[i]-b[i-1];
+    //倒着存前缀和
+    for(int i=n<<1;i>0;i--)
+        sum[i]+=sum[i+1];
+    head=1,tail=0;
+    for(int i=n<<1;i>0;i--)
+    {
+        while(head<=tail&&sum[i]<=sum[p[tail]])
+            tail--;
+        p[++tail]=i;
+        while(head<=tail&&p[head]-i>=n)
+            head++;
+        if(i<=n+1&&sum[p[head]]>=sum[i+n])
+            ans[i-1]=true;
+    }
+    for(int i=1;i<=n;i++)
+        if(ans[i])
+            puts("TAK");
+        else
+            puts("NIE");
+    return 0;
+}
+
