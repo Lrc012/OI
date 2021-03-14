@@ -1,0 +1,69 @@
+/* luoguP2216 HAOI2007 */
+/** 二维RMQ **/
+/**
+ *a*b的矩阵，找出一个n*n的子矩阵使得其中（最大值-最小值）最小
+ *2<=a,b<=1000,n<=a,b,n<=100，矩阵中数不超过1e9
+ *************
+ *注意：(a,b)为矩阵左上角，边长为n的正方形，右下角坐标为(a+n-1,b+n-1)
+ **/
+#include<cstdio>
+#include<algorithm>
+#include<cmath>
+using namespace std;
+const int N=1005,inf=0x7fffffff;
+int a,b,n;
+int stmax[N][N][8],stmin[N][N][8];
+template<class T>
+void read(T& x){
+    x=0;
+    int f=1;
+    char ch=getchar();
+    while(ch<'0'||ch>'9'){
+        if(ch=='-') f=-1;
+        ch=getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x=x*10+ch-'0';
+        ch=getchar();
+    }
+    x*=f;
+}
+void init()
+{
+    for(int k=1;k<=(int)log2(min(a,b))+1;k++)
+        for(int i=1;i+(1<<k)-1<=a;i++)
+            for(int j=1;j+(1<<k)-1<=b;j++)
+            {
+                stmax[i][j][k]=max(stmax[i][j][k-1], max(stmax[i][j+(1<<(k-1))][k-1],
+                        max(stmax[i+(1<<(k-1))][j][k-1], stmax[i+(1<<(k-1))][j+(1<<(k-1))][k-1])));
+                stmin[i][j][k]=min(stmin[i][j][k-1], min(stmin[i][j+(1<<(k-1))][k-1],
+                        min(stmin[i+(1<<(k-1))][j][k-1], stmin[i+(1<<(k-1))][j+(1<<(k-1))][k-1])));
+            }
+}
+int RMQ(int x,int y)
+{
+    int k=log2(n+1);
+    int maxn=max(stmax[x][y][k],max(stmax[x][y+n-(1<<k)][k],
+                 max(stmax[x+n-(1<<k)][y][k],stmax[x+n-(1<<k)][y+n-(1<<k)][k])));
+    int minn=min(stmin[x][y][k],min(stmin[x][y+n-(1<<k)][k],
+                 min(stmin[x+n-(1<<k)][y][k],stmin[x+n-(1<<k)][y+n-(1<<k)][k])));
+    //printf("%d %d:%d %d\n",x,y,maxn,minn);
+    return maxn-minn;
+}
+int main()
+{
+    read(a),read(b),read(n);
+    for(int i=1;i<=a;i++)
+        for(int j=1;j<=b;j++)
+        {
+            read(stmax[i][j][0]);
+            stmin[i][j][0]=stmax[i][j][0];
+        }
+    init();
+    int ans=inf;
+    for(int i=1;i<=a-n+1;i++)
+        for(int j=1;j<=b-n+1;j++)
+            ans=min(ans,RMQ(i,j));
+    printf("%d",ans);
+    return 0;
+}
