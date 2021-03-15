@@ -59,7 +59,7 @@ int main()
     mid=n>>1;
     for(int i=0;i<n;i++)
         read(a[i]);
-    //sort(a,a+n);
+    sort(a,a+n);//加上优化100ms
     dfs1(0,0);
     dfs2(mid,0);
     sort(sum2,sum2+cnt2);
