@@ -1,0 +1,71 @@
+/* luoguP4799 */
+/** 折半搜索 **/
+/**
+ *n个数，预算为m，其中1<=n<=40，1<=m<=1e18，每个数不超过1e16
+ *求预算内的方案数，两个相同大小的数算两个不同的数，答案<=2e40
+ ***********
+ *由于每个数太大不能用背包，2e40深搜会爆，考虑分成2e20和2e20
+ **/
+#include<cstdio>
+#include<algorithm>
+using namespace std;
+typedef long long ll;
+const int N=45,M=1<<20;
+int n,mid,cnt1,cnt2;
+ll a[N],sum1[M],sum2[M];
+ll m,ans;
+template<class T>
+void read(T& x){
+    x=0;
+    int f=1;
+    char ch=getchar();
+    while(ch<'0'||ch>'9'){
+        if(ch=='-') f=-1;
+        ch=getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x=x*10+ch-'0';
+        ch=getchar();
+    }
+    x*=f;
+}
+void dfs1(int cur,ll tot)
+{
+    if(tot>m)
+        return;
+    if(cur>=mid)
+    {
+        sum1[cnt1++]=tot;
+        return;
+    }
+    dfs1(cur+1,tot+a[cur]);//选
+    dfs1(cur+1,tot);//不选
+}
+void dfs2(int cur,ll tot)
+{
+    if(tot>m)
+        return;
+    if(cur>=n)
+    {
+        sum2[cnt2++]=tot;
+        return;
+    }
+    dfs2(cur+1,tot+a[cur]);
+    dfs2(cur+1,tot);
+}
+int main()
+{
+    read(n),read(m);
+    mid=n>>1;
+    for(int i=0;i<n;i++)
+        read(a[i]);
+    //sort(a,a+n);
+    dfs1(0,0);
+    dfs2(mid,0);
+    sort(sum2,sum2+cnt2);
+    for(int i=0;i<cnt1;i++)
+        ans+=upper_bound(sum2,sum2+cnt2,m-sum1[i])-sum2;
+        //这里要用upperbound，可能钱的总和有重复
+    printf("%lld",ans);
+    return 0;
+}
