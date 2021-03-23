@@ -1,0 +1,135 @@
+/* luoguP1074 NOIP2019tg */
+/** dfs **/
+/** 
+ *题意见链接，有图不描述
+ **/
+#include<cstdio>
+#include<algorithm>
+using namespace std;
+const int N=12,M=81;
+int mp[N][N];
+bool x[N][N],y[N][N],c[N][N];
+//x为横向，y为竖向，c从1-9分别是小方格
+int ans=-1;
+//一共多少个0
+struct node
+{
+    int line,num;
+    bool operator < (const node& a) const
+    {
+        return this->num<a.num;
+    }
+}cnt[N];
+void read(int& x){
+    x=0;
+    int f=1;
+    char ch=getchar();
+    while(ch<'0'||ch>'9'){
+        if(ch=='-') f=-1;
+        ch=getchar();
+    }
+    while(ch>='0'&&ch<='9'){
+        x=x*10+ch-'0';
+        ch=getchar();
+    }
+    x*=f;
+}
+int cul(int x,int y)//计算该格的分
+{
+    if(x==1||y==1||x==9||y==9)
+        return mp[x][y]*6;
+    if(x==2||y==2||x==8||y==8)
+        return mp[x][y]*7;
+    if(x==3||y==3||x==7||y==7)
+        return mp[x][y]*8;
+    if(x==4||y==4||x==6||y==6)
+        return mp[x][y]*9;
+    return mp[x][y]*10;
+}
+inline int col(int x,int y)
+{
+    if(x<=3) return 1+(y-1)/3;
+    if(x<=6) return 4+(y-1)/3;
+    return 7+(y-1)/3;
+}
+void print(int& l)
+{
+    static int cc=0;
+    cc++;
+    //if(cc>=M-tot+3)
+        //return;
+    printf("\n%d",l);
+    putchar('\n');
+    for(int i=1;i<=9;i++,putchar('\n'))
+        for(int j=1;j<=9;j++)
+            printf("%d ",mp[i][j]);
+
+}
+void dfs(int m,int b,int score)
+//搜cnt[m]所记录的行，第b列，现在是score分
+{
+    int l=cnt[m].line;//记录的是第l行
+    if(m==10)//已经搜完了所有行
+    {
+        ans=max(ans,score);
+        //print(l);
+        return;
+    }
+    if(b==10)
+    {
+        dfs(m+1,1,score);
+        return;
+    }
+    if(mp[l][b]!=0)
+    {
+        dfs(m,b+1,score);
+        return;
+    }
+    //print(l);
+    for(int j=1;j<=9;j++)//1-9数字枚举
+    {
+        if(!x[l][j]&&!y[b][j]&&!c[col(l,b)][j])
+        {
+            x[l][j]=y[b][j]=c[col(l,b)][j]=true;
+            mp[l][b]=j;
+            dfs(m,b+1,score+cul(l,b));
+            x[l][j]=y[b][j]=c[col(l,b)][j]=false;
+            mp[l][b]=0;
+        }
+    }
+    return;
+}
+int main()
+{
+    int Ans=0;
+    for(int i=1;i<=9;i++)
+    {
+        cnt[i].line=i;
+        for(int j=1;j<=9;j++)
+        {
+            int z;
+            read(z);
+            mp[i][j]=z;
+            if(!z)
+                cnt[i].num++;
+            else
+            {
+                Ans+=cul(i,j);
+                x[i][z]=true;
+                y[j][z]=true;
+                c[col(i,j)][z]=true;
+            }
+        }
+    }
+    sort(cnt+1,cnt+10);
+    for(int i=1;i<=9;i++)
+    {
+        if(cnt[i].num==0)
+            continue;
+        dfs(i,1,Ans);
+        break;
+    }
+    printf("%d",ans);
+    return 0;
+}
+
